@@ -10,6 +10,7 @@
 
         <script src = "./js/jquery.js")></script>
         <script src = "./js/charToStep.js")></script>
+        <script src = "./js/justIntonation.js"></script>
         <script>
             // This would work for chrome
             //  var audioCtx = new AudioContext();
@@ -17,6 +18,7 @@
             var oscillator = audioCtx.createOscillator();
             var gainNode = audioCtx.createGain();
 
+            var justIntonation = false;
 
             // list that keeps track of which keys are pressed at any time
             // when a key is pressed it is added to the list
@@ -41,6 +43,8 @@
 
             $("body").keydown(function(event) {
 
+                event.preventDefault();
+
                 // Determine if the note is already being held down
                 if (keysPressed.indexOf(event.which) > -1) {
                     //console.log("Keys Pressed: " + keysPressed);
@@ -51,35 +55,47 @@
 
                 // If this is a new note, initiate sound synthesis
                 else {
-                   //console.log("Keys Pressed: " + keysPressed);
-                    keysPressed.push(event.which);
-                    //console.log("Key: " + event.which + ", Step: " + charToStep[event.which]);
-                    step = charToStep[event.which];
-                    //oscillator.frequency.value = stepToPitch(step, base);
 
-                    oscillators[event.which] = audioCtx.createOscillator();
-                    oscillators[event.which].connect(gainNode);
-                    oscillators[event.which].type = "square";
-                    oscillators[event.which].frequency.value = stepToPitch(step,base);
-                    oscillators[event.which].start();
+                    if ( charToStep[event.which] != undefined ){
+                        keysPressed.push(event.which);
+                        step = charToStep[event.which];
+                        oscillators[event.which] = audioCtx.createOscillator();
+                        oscillators[event.which].connect(gainNode);
+                        oscillators[event.which].type = "sawtooth";
+                        oscillators[event.which].frequency.value = stepToPitch(step,base);
+                        oscillators[event.which].start();
+                    }
+                    console.log("Keys Pressed: " + keysPressed);
+
                 }
 
             });
 
             $("body").keyup(function(event){
-                console.log("Keys Pressed: " + keysPressed);
-                oscillators[event.which].stop();
-                //delete oscillators[event.which];
-                index = keysPressed.indexOf(event.which);
-                if (index > -1 ){
+                if (keysPressed.indexOf(event.which) > -1){
+                    oscillators[event.which].stop();
+                    delete oscillators[event.which];
+                    index = keysPressed.indexOf(event.which);
                     keysPressed.splice(index,1);
                 }
+                console.log("Keys Pressed: " + keysPressed);
+
             });
 
             function stepToPitch (step, base){
-                pitch = base * Math.pow(r, step);
-                console.log("Step: " + step + ", Base: " + base + ", Pitch: " + pitch);
+
+                if (justIntonation){
+                    pitch = justPitch(base,step);
+                    console.log("Step: " + step + ", Base: " + base + ", Pitch: " + pitch);
+
+
+                }
+                else {
+                    pitch = base * Math.pow(r, step);
+                    console.log("Step: " + step + ", Base: " + base + ", Pitch: " + pitch);
+                }
                 return pitch;
+
             }
 
         </script>
