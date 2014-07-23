@@ -1,0 +1,89 @@
+<html>
+
+
+    <head></head>
+
+    <body>
+
+        <h4>Wallabytron 0.1</h4>
+
+
+        <script src = "./js/jquery.js")></script>
+        <script src = "./js/charToStep.js")></script>
+        <script>
+            // This would work for chrome
+            //  var audioCtx = new AudioContext();
+            var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            var oscillator = audioCtx.createOscillator();
+            var gainNode = audioCtx.createGain();
+
+
+            // list that keeps track of which keys are pressed at any time
+            // when a key is pressed it is added to the list
+            // on keyup() the key is removed from the list
+            var keysPressed = [];
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            //oscillator.type = "square";
+            //oscillator.frequency.value = 440;
+            //oscillator.start();
+
+
+            var base = 220;
+            var r = Math.pow(2, 1/12);
+
+            //create an oscillator for each note?
+
+            oscillators = {};
+
+
+            $("body").keydown(function(event) {
+
+                // Determine if the note is already being held down
+                if (keysPressed.indexOf(event.which) > -1) {
+                    //console.log("Keys Pressed: " + keysPressed);
+                    console.log("key already pressed");
+                    return;
+                }
+
+
+                // If this is a new note, initiate sound synthesis
+                else {
+                   //console.log("Keys Pressed: " + keysPressed);
+                    keysPressed.push(event.which);
+                    //console.log("Key: " + event.which + ", Step: " + charToStep[event.which]);
+                    step = charToStep[event.which];
+                    //oscillator.frequency.value = stepToPitch(step, base);
+
+                    oscillators[event.which] = audioCtx.createOscillator();
+                    oscillators[event.which].connect(gainNode);
+                    oscillators[event.which].type = "square";
+                    oscillators[event.which].frequency.value = stepToPitch(step,base);
+                    oscillators[event.which].start();
+                }
+
+            });
+
+            $("body").keyup(function(event){
+                console.log("Keys Pressed: " + keysPressed);
+                oscillators[event.which].stop();
+                //delete oscillators[event.which];
+                index = keysPressed.indexOf(event.which);
+                if (index > -1 ){
+                    keysPressed.splice(index,1);
+                }
+            });
+
+            function stepToPitch (step, base){
+                pitch = base * Math.pow(r, step);
+                console.log("Step: " + step + ", Base: " + base + ", Pitch: " + pitch);
+                return pitch;
+            }
+
+        </script>
+
+    </body>
+
+</html>
