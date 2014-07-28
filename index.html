@@ -61,7 +61,7 @@
                         step = charToStep[event.which];
                         oscillators[event.which] = audioCtx.createOscillator();
                         oscillators[event.which].connect(gainNode);
-                        oscillators[event.which].type = "sawtooth";
+                        oscillators[event.which].type = "square";
                         oscillators[event.which].frequency.value = stepToPitch(step,base);
                         oscillators[event.which].start();
                     }
